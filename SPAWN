@@ -1,0 +1,428 @@
+local player = game.Players.LocalPlayer
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+
+-- Item List
+local items = {
+    "Harvester",
+    "Gingerscope",
+    "Bauble",
+    "Icepiercer",
+    "TreeGun2023",
+    "TreeKnife2023",
+    "TreeGun2023Chroma",
+    "TreeKnife2023Chroma",
+    "Bloom",
+    "Flora",
+    "TravelerAxe",
+    "TravelerGun",
+    "TravelerAxeChroma",
+    "TravelerGunChroma",
+    "Celestial",
+    "Constellation",
+    "ConstellationChroma",
+     "BaubleChroma",
+     "Candy",
+     "Sugar",
+     "Darksword",
+     "Darkshot",
+     "VampireAxe",
+     "VampireGun",
+      "SwirlyAxe",
+      "SwirlyGun",
+     "Flowerwood",
+     "FlowerwoodGun",
+     "VampireGunChroma",
+      "WatergunChroma",
+     "Turkey2023",
+     "Sakura_K",
+     "Blossom_G",
+      "ZombieBat",
+      "Makeshift",
+      "Sorry"
+    
+     
+}
+
+-- Create ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "ItemSpawnerGUI"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = player:WaitForChild("PlayerGui")
+screenGui.IgnoreGuiInset = true
+
+-- Intro Animation
+local introGui = Instance.new("ScreenGui")
+introGui.Parent = player:WaitForChild("PlayerGui")
+introGui.IgnoreGuiInset = true
+
+local container = Instance.new("Frame")
+container.Size = UDim2.new(0, 240, 0, 70)
+container.Position = UDim2.new(0.5, -150, 0.5, -50)
+container.BackgroundTransparency = 1
+container.Parent = introGui
+
+local icon = Instance.new("ImageLabel")
+icon.Size = UDim2.new(0, 300, 0, 100)
+icon.Position = UDim2.new(0.05, 0, 0.15, 0)
+icon.BackgroundTransparency = 1
+icon.ImageTransparency = 1
+icon.Parent = container
+Instance.new("UICorner", icon).CornerRadius = UDim.new(1, 0)
+
+local textLabel = Instance.new("TextLabel")
+textLabel.Size = UDim2.new(0, 170, 0, 40)
+textLabel.Position = UDim2.new(0, 60, 0.2, 0)
+textLabel.BackgroundTransparency = 1
+textLabel.Text = "ITEM SPAWNER"
+textLabel.TextTransparency = 1
+textLabel.TextColor3 = Color3.new(1, 1, 1)
+textLabel.Font = Enum.Font.GothamBlack
+textLabel.TextScaled = true
+textLabel.Parent = container
+
+local function fadeIn(object, prop, from, to, step, delay)
+    for i = from, to, step do
+        object[prop] = i
+        task.wait(delay)
+    end
+    object[prop] = to
+end
+
+local function slide(object, prop, direction, steps, delay)
+    for _ = 1, steps do
+        object[prop] = object[prop] + direction
+        task.wait(delay)
+    end
+end
+
+local function playIntro()
+    task.spawn(function()
+        fadeIn(icon, "ImageTransparency", 1, 0, -0.1, 0.015)
+    end)
+    slide(icon, "Position", UDim2.new(-0.0015, 0, 0, 0), 15, 0.015)
+
+    wait(0.15)
+
+    task.spawn(function()
+        fadeIn(textLabel, "TextTransparency", 1, 0, -0.1, 0.015)
+    end)
+    slide(textLabel, "Position", UDim2.new(0.0015, 0, 0, 0), 15, 0.015)
+
+    wait(1.2)
+
+    for i = 0, 1, 0.1 do
+        icon.ImageTransparency = i
+        textLabel.TextTransparency = i
+        wait(0.015)
+    end
+
+    introGui:Destroy()
+end
+
+playIntro()
+
+-- Main GUI
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 240, 0, 180)
+mainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+mainFrame.BackgroundTransparency = 1
+mainFrame.ZIndex = 1
+mainFrame.Parent = screenGui
+Instance.new("UICorner", mainFrame).CornerRadius = UDim.new(0, 10)
+local stroke = Instance.new("UIStroke", mainFrame)
+stroke.Color = Color3.fromRGB(0, 255, 0)
+stroke.Thickness = 1.2
+
+-- Title
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Text = "SAMI MM2 SPAWNER"
+titleLabel.Size = UDim2.new(1, 0, 0, 25)
+titleLabel.BackgroundTransparency = 1
+titleLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
+titleLabel.Font = Enum.Font.GothamBlack
+titleLabel.TextSize = 16
+titleLabel.TextTransparency = 1
+titleLabel.ZIndex = 2
+titleLabel.Parent = mainFrame
+
+-- Input Box
+local inputBox = Instance.new("TextBox")
+inputBox.PlaceholderText = "Item Name..."
+inputBox.Size = UDim2.new(0.9, 0, 0, 25)
+inputBox.Position = UDim2.new(0.05, 0, 0, 35)
+inputBox.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+inputBox.TextColor3 = Color3.fromRGB(0, 255, 0)
+inputBox.Font = Enum.Font.Gotham
+inputBox.TextSize = 12
+inputBox.TextTransparency = 1
+inputBox.ZIndex = 2
+inputBox.Text = ""
+inputBox.Parent = mainFrame
+Instance.new("UICorner", inputBox).CornerRadius = UDim.new(0, 6)
+
+-- Spawn Button
+local spawnButton = Instance.new("TextButton")
+spawnButton.Text = "Spawn"
+spawnButton.Size = UDim2.new(0.45, 0, 0, 25)
+spawnButton.Position = UDim2.new(0.5, 0, 0, 65)
+spawnButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+spawnButton.TextColor3 = Color3.new(1, 1, 1)
+spawnButton.Font = Enum.Font.GothamBlack
+spawnButton.TextSize = 12
+spawnButton.TextTransparency = 1
+spawnButton.ZIndex = 2
+spawnButton.Parent = mainFrame
+Instance.new("UICorner", spawnButton).CornerRadius = UDim.new(0, 6)
+
+-- Open Table Button
+local openButton = Instance.new("TextButton")
+openButton.Text = "Open"
+openButton.Size = UDim2.new(0.35, 0, 0, 20)
+openButton.Position = UDim2.new(0.05, 0, 0, 65)
+openButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+openButton.TextColor3 = Color3.new(1, 1, 1)
+openButton.Font = Enum.Font.GothamBlack
+openButton.TextSize = 10
+openButton.TextTransparency = 1
+openButton.ZIndex = 2
+openButton.Parent = mainFrame
+Instance.new("UICorner", openButton).CornerRadius = UDim.new(0, 6)
+
+-- Scrollable Item Table
+local tableFrame = Instance.new("ScrollingFrame")
+tableFrame.Size = UDim2.new(0.9, 0, 0, 100)
+tableFrame.Position = UDim2.new(0.05, 0, 0, 100)
+tableFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+tableFrame.BackgroundTransparency = 1
+tableFrame.BorderSizePixel = 0
+tableFrame.CanvasSize = UDim2.new(0, 0, 0, #items * 25)
+tableFrame.ScrollBarThickness = 3
+tableFrame.ScrollBarImageColor3 = Color3.fromRGB(0, 255, 0)
+tableFrame.Visible = false
+tableFrame.ZIndex = 3
+tableFrame.Parent = mainFrame
+Instance.new("UICorner", tableFrame).CornerRadius = UDim.new(0, 6)
+local tableStroke = Instance.new("UIStroke", tableFrame)
+tableStroke.Color = Color3.fromRGB(0, 255, 0)
+tableStroke.Thickness = 0.8
+
+local tableList = Instance.new("UIListLayout")
+tableList.FillDirection = Enum.FillDirection.Vertical
+tableList.Padding = UDim.new(0, 4)
+tableList.SortOrder = Enum.SortOrder.LayoutOrder
+tableList.Parent = tableFrame
+
+local tablePadding = Instance.new("UIPadding")
+tablePadding.PaddingTop = UDim.new(0, 4)
+tablePadding.PaddingLeft = UDim.new(0, 4)
+tablePadding.PaddingRight = UDim.new(0, 4)
+tablePadding.Parent = tableFrame
+
+for _, item in ipairs(items) do
+    local itemButton = Instance.new("TextButton")
+    itemButton.Size = UDim2.new(1, -8, 0, 20)
+    itemButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    itemButton.Text = item
+    itemButton.TextColor3 = Color3.fromRGB(0, 255, 0)
+    itemButton.Font = Enum.Font.Gotham
+    itemButton.TextSize = 10
+    itemButton.TextTransparency = 1
+    itemButton.ZIndex = 4
+    itemButton.Parent = tableFrame
+    Instance.new("UICorner", itemButton).CornerRadius = UDim.new(0, 4)
+
+    itemButton.MouseButton1Click:Connect(function()
+        inputBox.Text = item
+        local grow = TweenService:Create(itemButton, TweenInfo.new(0.15, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = UDim2.new(1, -8, 0, 22)})
+        grow:Play()
+        grow.Completed:Connect(function()
+            itemButton:TweenSize(UDim2.new(1, -8, 0, 20), "Out", "Quad", 0.1, true)
+        end)
+    end)
+end
+
+-- Close Button
+local closeButton = Instance.new("TextButton")
+closeButton.Text = "Close"
+closeButton.Size = UDim2.new(0.35, 0, 0, 20)
+closeButton.Position = UDim2.new(0.6, 0, 0, 145)
+closeButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+closeButton.TextColor3 = Color3.new(1, 1, 1)
+closeButton.Font = Enum.Font.GothamBlack
+closeButton.TextSize = 10
+closeButton.TextTransparency = 1
+closeButton.ZIndex = 2
+closeButton.Parent = mainFrame
+Instance.new("UICorner", closeButton).CornerRadius = UDim.new(0, 6)
+
+-- Progress Bar Table
+local progressFrame = Instance.new("Frame")
+progressFrame.Size = UDim2.new(0, 240, 0, 40)
+progressFrame.Position = UDim2.new(1, -250, 0, 100)
+progressFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+progressFrame.BackgroundTransparency = 1
+progressFrame.ZIndex = 2
+progressFrame.Parent = screenGui
+Instance.new("UICorner", progressFrame).CornerRadius = UDim.new(0, 6)
+
+local progressLabel = Instance.new("TextLabel")
+progressLabel.Size = UDim2.new(1, 0, 0, 16)
+progressLabel.BackgroundTransparency = 1
+progressLabel.Text = "Progress: Waiting..."
+progressLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
+progressLabel.Font = Enum.Font.Gotham
+progressLabel.TextSize = 10
+progressLabel.TextTransparency = 1
+progressLabel.ZIndex = 2
+progressLabel.Parent = progressFrame
+
+local barBG = Instance.new("Frame")
+barBG.Size = UDim2.new(0.95, 0, 0, 8)
+barBG.Position = UDim2.new(0.025, 0, 0, 20)
+barBG.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+barBG.BackgroundTransparency = 1
+barBG.ZIndex = 2
+barBG.Parent = progressFrame
+Instance.new("UICorner", barBG).CornerRadius = UDim.new(1, 0)
+
+local barFill = Instance.new("Frame")
+barFill.Size = UDim2.new(0, 0, 1, 0)
+barFill.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+barFill.BackgroundTransparency = 1
+barFill.ZIndex = 2
+barFill.Parent = barBG
+Instance.new("UICorner", barFill).CornerRadius = UDim.new(1, 0)
+
+-- Toggle Table Visibility
+local isTableOpen = false
+openButton.MouseButton1Click:Connect(function()
+    isTableOpen = not isTableOpen
+    openButton.Text = isTableOpen and "Close Table" or "Open"
+    tableFrame.Visible = isTableOpen
+
+    local mainFrameHeight = isTableOpen and 250 or 180
+    local closeButtonY = isTableOpen and 215 or 145
+    local progressFrameY = isTableOpen and 170 or 100
+
+    TweenService:Create(mainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+        Size = UDim2.new(0, 240, 0, mainFrameHeight)
+    }):Play()
+    TweenService:Create(closeButton, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+        Position = UDim2.new(0.6, 0, 0, closeButtonY)
+    }):Play()
+    TweenService:Create(progressFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+        Position = UDim2.new(1, -250, 0, progressFrameY)
+    }):Play()
+
+    local grow = TweenService:Create(openButton, TweenInfo.new(0.15, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = UDim2.new(0.37, 0, 0, 22)})
+    grow:Play()
+    grow.Completed:Connect(function()
+        openButton:TweenSize(UDim2.new(0.35, 0, 0, 20), "Out", "Quad", 0.1, true)
+    end)
+end)
+
+-- Drag Functionality
+local dragToggle, dragStart, startPos
+local function updateInput(input)
+    local delta = input.Position - dragStart
+    local position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    TweenService:Create(mainFrame, TweenInfo.new(0.25), {Position = position}):Play()
+end
+
+mainFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragToggle = true
+        dragStart = input.Position
+        startPos = mainFrame.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragToggle = false
+            end
+        end)
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        if dragToggle then
+            updateInput(input)
+        end
+    end
+end)
+
+-- Spawn Function
+local function spawnItem(name)
+    local DataBase, PlayerData = require(game:GetService("ReplicatedStorage").Database.Sync.Item), require(game:GetService("ReplicatedStorage").Modules.ProfileData)
+    local PlayerWeapons = PlayerData.Weapons
+
+    if not PlayerWeapons.Owned[name] then
+        PlayerWeapons.Owned[name] = 1
+    else
+        PlayerWeapons.Owned[name] += 1
+    end
+
+    game:GetService("RunService"):BindToRenderStep("InventoryUpdate", 0, function()
+        PlayerData.Weapons = PlayerWeapons
+    end)
+
+    game.Players.LocalPlayer.Character:BreakJoints()
+end
+
+-- Progress Bar Animation
+local function showProgress(itemName)
+    TweenService:Create(progressFrame, TweenInfo.new(0.3), {BackgroundTransparency = 0}):Play()
+    TweenService:Create(progressLabel, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
+    TweenService:Create(barBG, TweenInfo.new(0.3), {BackgroundTransparency = 0}):Play()
+    TweenService:Create(barFill, TweenInfo.new(0.3), {BackgroundTransparency = 0}):Play()
+
+    local percent = 0
+    while percent < 100 do
+        percent += math.random(5, 15)
+        percent = math.clamp(percent, 0, 100)
+        progressLabel.Text = "Spawning: " .. itemName .. " (" .. percent .. "%)"
+        barFill:TweenSize(UDim2.new(percent / 100, 0, 1, 0), "Out", "Quad", 0.1, true)
+        task.wait(0.5)
+    end
+
+    progressLabel.Text = "Spawned: " .. itemName
+    spawnItem(itemName)
+
+    task.delay(0.4, function()
+        TweenService:Create(progressFrame, TweenInfo.new(0.3), {BackgroundTransparency = 1}):Play()
+        TweenService:Create(progressLabel, TweenInfo.new(0.3), {TextTransparency = 1}):Play()
+        TweenService:Create(barBG, TweenInfo.new(0.3), {BackgroundTransparency = 1}):Play()
+        TweenService:Create(barFill, TweenInfo.new(0.3), {BackgroundTransparency = 1}):Play()
+    end)
+end
+
+-- Button Connections
+spawnButton.MouseButton1Click:Connect(function()
+    local itemName = inputBox.Text
+    if itemName == "" then return end
+
+    local grow = TweenService:Create(spawnButton, TweenInfo.new(0.15, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = UDim2.new(0.47, 0, 0, 27)})
+    grow:Play()
+    grow.Completed:Connect(function()
+        spawnButton:TweenSize(UDim2.new(0.45, 0, 0, 25), "Out", "Quad", 0.1, true)
+    end)
+
+    showProgress(itemName)
+    inputBox.Text = ""
+end)
+
+closeButton.MouseButton1Click:Connect(function()
+    screenGui:Destroy()
+end)
+
+-- Initial Animation
+mainFrame:TweenPosition(UDim2.new(0.5, 0, 0.5, 0), "Out", "Quad", 0.3, true)
+TweenService:Create(mainFrame, TweenInfo.new(0.3), {BackgroundTransparency = 0}):Play()
+
+for _, v in ipairs(mainFrame:GetDescendants()) do
+    if v:IsA("TextLabel") or v:IsA("TextButton") or v:IsA("TextBox") then
+        TweenService:Create(v, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
+    end
+end 
